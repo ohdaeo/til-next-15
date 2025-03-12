@@ -3,7 +3,7 @@ import GoodItem from "@/components/good-item";
 import goods from "@/mock/good.json";
 // 쿼리 처리하기
 // 아래 페이지는 쿼리를 서버에서 읽어들여서 처리함.
-// http://localhost:3000/search?keword=iu
+// 주소/search?keword=iu
 export default async function Page({
   searchParams,
 }: {
