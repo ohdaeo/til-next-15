@@ -1,0 +1,13 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.container h4 {
+  margin: 20px 0;
+}
+
+.container h4 strong {
+  color: #e0049b;
+  text-decoration: underline;
+}

@@ -1,17 +1,11 @@
 import { GoodDataType } from "@/types/types";
 import style from "@/app/good/[id]/page.module.css";
 import Image from "next/image";
+import { notFound } from "next/navigation";
 
-const mockData: GoodDataType = {
-  id: 1,
-  title: "Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops",
-  price: 109.95,
-  description:
-    "Your perfect pack for everyday use and walks in the forest. Stash your laptop (up to 15 inches) in the padded sleeve, your everyday",
-  category: "men's clothing",
-  image: "https://fakestoreapi.com/img/81fPKd-2AYL._AC_SL1500_.jpg",
-  rating: { rate: 3.9, count: 120 },
-};
+export function generateStaticParams() {
+  return [{ id: "1" }, { id: "2" }, { id: "3" }, { id: "4" }];
+}
 
 export default async function Page({
   params,
@@ -19,15 +13,35 @@ export default async function Page({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  console.log(id);
+  // console.log(id);
 
-  const { title, category, description, image, rating } = mockData;
+  let good: GoodDataType | null = null;
+
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/products/${id}`
+    );
+    good = await res.json();
+    // console.log(good);
+  } catch (error) {
+    console.log(error);
+  }
+
+  if (!good) {
+    notFound();
+    // return <div>존재하지 않는 상품입니다.</div>;
+  }
+
+  const { title, image, category, rating, description } = good;
 
   return (
     <div className={style.conteiner}>
       <div>
         <p className={style.title}>{title}</p>
-        <div className={style.image} style={{ backgroundImage: `url${image}` }}>
+        <div
+          className={style.image}
+          style={{ backgroundImage: `url(${image})` }}
+        >
           <Image src={image} width={245} height={350} alt={title} />
         </div>
         <p className={style.category}>{category}</p>
