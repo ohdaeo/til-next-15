@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 
+// 액션의 상태도 전달을 하는 형태로 변경하기
+// export async function createReviewAction(state: any, formData: FormData) {
 export async function createReviewAction(_: any, formData: FormData) {
   console.log("Next 서버 액션");
   const id = formData.get("id")?.toString();
@@ -23,7 +26,7 @@ export async function createReviewAction(_: any, formData: FormData) {
   if (!id || !title || !price || !description || !image || !category) {
     return {
       status: false,
-      message: "각 항목을 채워주세요",
+      message: "각 항목을 채워주세요.",
     };
   }
 
@@ -33,14 +36,12 @@ export async function createReviewAction(_: any, formData: FormData) {
       body: JSON.stringify({ title, price, description, image, category }),
     });
     const { id } = await res.json();
-    console.log("상품 등록 성공", id);
+    // console.log("상품 등록 성공", id);
 
     // 태그를 이용하는 경우
     revalidateTag(`good-${id}`);
-
     // 패스를 이용하는 경우
-    revalidatePath(`/good/${id}`);
-
+    // revalidatePath(`/good/${id}`);
     return {
       status: true,
       message: "등록에 성공하였습니다.",
@@ -49,7 +50,7 @@ export async function createReviewAction(_: any, formData: FormData) {
     console.log(error);
     return {
       status: false,
-      message: `상품 등록에 실패하였습니다. ${error}`,
+      message: `새로운 상품 등록에 실패하였습니다. ${error}`,
     };
   }
 }

@@ -1,16 +1,33 @@
 "use client";
-
 import { createReviewAction } from "@/actions/create-review-action";
 import style from "@/components/editor.module.css";
-import { useActionState } from "react";
+
+import { useActionState, useEffect } from "react";
 
 export default function Editor() {
-  // React 19 버전부터 적용가능
+  // React 19 버전 부터 적용가능
   // 서버액션의 상태를 파악해서 클라이언트에서 활용하는 방식
   const [state, formAction, isPending] = useActionState(
     createReviewAction,
     null
   );
+
+  // state 가 변경되면 실행하기
+  useEffect(() => {
+    if (state && !state.status) {
+      alert(state.message);
+    }
+  }, [state]);
+
+  // 서버 액션이 진행중..
+  if (isPending) {
+    return <div>서버 액션 진행중 ...</div>;
+  }
+
+  // // 서버 액션의 결과가 status 가 false 라면
+  if (state?.status === false) {
+    return <p>{state.message}</p>;
+  }
 
   return (
     <div className={style.add_container}>
@@ -19,6 +36,7 @@ export default function Editor() {
         <input type="hidden" name="id" value={500} readOnly />
         <div className={style.input_container}>
           <input
+            disabled={isPending}
             type="text"
             name="title"
             placeholder="상품명"
@@ -26,6 +44,7 @@ export default function Editor() {
             defaultValue={"test product"}
           />
           <input
+            disabled={isPending}
             type="text"
             name="price"
             placeholder="가격"
@@ -34,6 +53,7 @@ export default function Editor() {
           />
         </div>
         <textarea
+          disabled={isPending}
           name="description"
           placeholder="설명"
           required
@@ -41,6 +61,7 @@ export default function Editor() {
         />
         <div className={style.input_container}>
           <input
+            disabled={isPending}
             type="text"
             name="image"
             placeholder="이미지"
@@ -48,6 +69,7 @@ export default function Editor() {
             defaultValue={"https://i.pravatar.cc"}
           />
           <input
+            disabled={isPending}
             type="text"
             name="category"
             placeholder="카테고리"
@@ -55,8 +77,9 @@ export default function Editor() {
             defaultValue={"category"}
           />
         </div>
-
-        <button type="submit">작성하기</button>
+        <button disabled={isPending} type="submit">
+          {isPending ? "작성중.." : "작성하기"}
+        </button>
       </form>
     </div>
   );

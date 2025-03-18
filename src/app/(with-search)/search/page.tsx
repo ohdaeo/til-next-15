@@ -1,6 +1,6 @@
+import style from "@/app/(with-search)/search/page.module.css";
 import GoodItem from "@/components/good-item";
 import { GoodDataType } from "@/types/types";
-import style from "@/app/(with-search)/search/page.module.css";
 import { Suspense } from "react";
 
 async function SearchResult({ keyword }: { keyword: string }) {
@@ -20,6 +20,36 @@ async function SearchResult({ keyword }: { keyword: string }) {
     </div>
   );
 }
+
+// SEO 적용
+/*
+ export const metadata: Metadata = {
+  title: "상품 검색 페이지",
+  description: "상품 검색 페이지입니다.",
+  openGraph: {
+    title: "상품 검색 페이지",
+    description: "상품 검색 페이지입니다.",
+    images: [{ url: "/thumbnail.png" }],
+  },
+};
+*/
+
+export const generateMetadata = async ({
+  searchParams,
+}: {
+  searchParams: Promise<{ keyword: string }>;
+}) => {
+  const { keyword } = await searchParams;
+  return {
+    title: `상품 ${keyword}검색 페이지`,
+    description: `상품 ${keyword}검색 페이지입니다.`,
+    openGraph: {
+      title: `상품 ${keyword}검색 페이지`,
+      description: `상품 ${keyword}검색 페이지입니다.`,
+      images: [{ url: "/thumbnail.png" }],
+    },
+  };
+};
 
 // 쿼리 처리하기
 // 아래 페이지는 쿼리를 서버에서 읽어들여서 처리함.
