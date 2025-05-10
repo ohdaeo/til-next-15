@@ -1,105 +1,113 @@
 ![nextjs](https://noticon-static.tammolo.com/dgggcrkxq/image/upload/v1738065463/noticon/gepermuh39ujljzf72e6.png)
 
-# Next Js ver.15
+# Image 컴포넌트
 
-### 시작하기
+- https://nextjs.org/docs/pages/api-reference/components/image
+- https://velog.io/@apparatus1/next-image
+- webp, AVIF 등의 이미지 포맷으로 자동 변환을 지원
+- 디바이스에 맞도록 이미지를 생성해서 적용 지원
+- 레이지 로딩 등도 지원함.
+- 블러 효과로 이미지를 사전에 흐린 이미지로 로딩 후 완료시 선명한 이미지로 대체
 
-```bash
-npx create-next-app@latest .
+## 외부 URL 이미지 활용하기
+
+- next.config.ts
+
+```ts
+import type { NextConfig } from "next";
+const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "fakestoreapi.com",
+      },
+    ],
+  },
+};
+
+export default nextConfig;
 ```
 
-![Installing devDependencies](https://github.com/user-attachments/assets/a9f73c5c-5baf-4eea-815b-89bc8f1b9270)
-
-- tailWind 는 일단 설치안함
-
-1. `npm run dev`
-2. `npm run build`
-3. `npm run start`
-
-### Router
-
-1. Page Router
-
-- src/pages/`routername`.tsx
-- src/pages/board/[id].tsx
-
-2. App Router
-
-- src/`app`
-
-**1. 일반 UIR 경로 처리**
-
-- src/app/page.tsx `Home Page`
+### 기본예제 (Image 컴포넌트 사용법)
 
 ```tsx
-export default function Home() {
-  return <div>Hello</div>;
-}
+import Image from "next/image";
+<Image src={경로} width={너비} height={높이} alt={설명} />;
 ```
 
-**2. UIR 쿼리 처리**
+# SEO 적용하기
 
-- src/app/search/page.tsx `Search Page`
-- src/app/search/page.tsx `주소/search?keyword=검색어`
+### 기본예제 (메타데이터 설정)
+
+- src\app\(with-search)\page.tsx
 
 ```tsx
-// 쿼리를 서버에서 읽어들여서 처리함
-export default async function page({
+import { Metadata } from "next";
+
+// SEO 적용
+export const metadata: Metadata = {
+  title: "상품 홍보 페이지",
+  description: "상품 홍보 페이지입니다.",
+  openGraph: {
+    title: "상품 홍보 페이지",
+    description: "상품 홍보 페이지입니다.",
+    images: [{ url: "/thumbnail.png" }],
+  },
+};
+```
+
+- src\app\(with-search)\search\page.tsx
+
+```tsx
+export const generateMetadata = async ({
   searchParams,
 }: {
   searchParams: Promise<{ keyword: string }>;
-}) {
+}) => {
   const { keyword } = await searchParams;
-  console.log("검색어", keyword);
-  return <div>{keyword} : Search</div>;
-}
+  return {
+    title: `상품 ${keyword}검색 페이지`,
+    description: `상품 ${keyword}검색 페이지입니다.`,
+    openGraph: {
+      title: `상품 ${keyword}검색 페이지`,
+      description: `상품 ${keyword}검색 페이지입니다.`,
+      images: [{ url: "/thumbnail.png" }],
+    },
+  };
+};
 ```
 
-**Next 에서는 서버 컴포넌트가 기본이다.**
-
-- console.log 를 출력 시 터미널(서버)에서 출력된다.
-
-```
- GET /search?keyword=ddd 200 in 94ms
- ✓ Compiled in 247ms (708 modules)
-검색어 ddd
- GET /search?keyword=ddd 200 in 58ms
-```
-
-**3. URI 의 Params 처리**
-
-- src/app/good/page.tsx `Goods Page`
-- src/app/good/[id]/page.tsx `주소/good/id`
+- src\app\good\[id]\page.tsx
 
 ```tsx
-export default async function Page({
+// SEO
+export const generateMetadata = async ({
   params,
 }: {
   params: Promise<{ id: string }>;
-}) {
+}) => {
   const { id } = await params;
-  console.log(id);
-  return <div>{id}번 : 제품 상세 페이지</div>;
-}
+
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/products/${id}`
+    );
+    const good: GoodDataType = await res.json();
+    const { title, description } = good;
+    return {
+      title: `상품 ${title} 상세 페이지`,
+      description: `상품 설명 - ${description}`,
+      openGraph: {
+        title: `상품 ${title} 상세 페이지`,
+        description: `상품 설명 - ${description}`,
+        images: [{ url: "/thumbnail.png" }],
+      },
+    };
+  } catch (error) {
+    console.log(error);
+  }
+};
 ```
 
-- src/app/good/[...id]/page.tsx `주소/good/id/id/id` (중첩 라우터)
-
-```
-[ '100', '5', '12' ]
- GET /good/100/5/12 200 in 50ms
-```
-
-**4. 404 처리**
-
-- src/app/not-found.tsx `주소/404` or `주소/notfound`
-
-```tsx
-export default function NotFound() {
-  return <div>잘못된 경로입니다.</div>;
-}
-```
-
-- src/app/search/not-found.tsx `주소/search/404`
-
-* 추후에 업데이트 할 예정
+# Deploy 실행하기(Vercel)
